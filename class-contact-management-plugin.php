@@ -71,42 +71,39 @@ class Contact_Management_Plugin
     }
 
     public function enqueue_scripts()
-{
-    wp_enqueue_script('jquery');
-    wp_enqueue_script(
-        'jquery-validate',
-        'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js',
-        array('jquery'),
-        '1.19.3',
-        true
-    );
+    {
+        wp_enqueue_script('jquery');
+ 
+        wp_enqueue_script(
+            'jquery-validate',
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js',
+            array('jquery'),
+            '1.19.3',
+            true
+        );
+ 
+        wp_enqueue_script(
+            'contact-management-scripts',
+            plugin_dir_url(__FILE__) . 'js/contact-management.js',
+            array('jquery', 'jquery-validate'),
+            '1.0',
+            true
+        );
 
-    wp_enqueue_script(
-        'contact-management-scripts',
-        plugin_dir_url(__FILE__) . 'js/contact-management.js',
-        array('jquery', 'jquery-validate'), 
-        '1.0',
-        true
-    );
+        wp_localize_script('contact-management-scripts', 'ajax_object', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'security' => wp_create_nonce('save_contact_nonce'),
+            'delete_contact_nonce' => wp_create_nonce('delete_contact_nonce'),
+        ));
     
-    wp_localize_script('contact-management-scripts', 'ajax_object', array(
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'security' => wp_create_nonce('save_contact_nonce')
-    ));
-    wp_enqueue_script('custom-ajax-script', plugin_dir_url(__FILE__) . 'js/custom-ajax-script.js', array('jquery'), '1.0', true);
-    wp_localize_script('custom-ajax-script', 'ajax_object', array(
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'delete_contact_nonce' => wp_create_nonce('delete_contact_nonce'),
-    ));
-
-
-    wp_enqueue_style(
-        'contact-form-style',
-        plugin_dir_url(__FILE__) . 'css/contact-management.css',
-        array(),
-        '1.0'
-    );
-}
+        wp_enqueue_style(
+            'contact-form-style',
+            plugin_dir_url(__FILE__) . 'css/contact-management.css',
+            array(),
+            '1.0'
+        );
+    }
+    
 
     public function display_shortcode_notice()
     {
@@ -186,12 +183,16 @@ class Contact_Management_Plugin
             array('%s', '%s', '%s', '%s', '%s')
         );
 
+        // Add debugging statements to check if the insertion is successful
         if ($result) {
+            error_log('Contact saved successfully.');
             wp_send_json_success(array('message' => 'Contact saved successfully.'));
         } else {
+            error_log('Error saving contact. Please try again later.');
             wp_send_json_error(array('message' => 'Error saving contact. Please try again later.'));
         }
     } else {
+        error_log('Invalid security token.');
         wp_send_json_error(array('message' => 'Invalid security token.'));
     }
 }
