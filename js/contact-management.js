@@ -53,18 +53,14 @@ jQuery(document).ready(function ($) {
 
     // Handle contact delete via AJAX.
     jQuery(document).ready(function($) {
-        // Delete contact function
         $(".delete-contact").on("click", function(e) {
             e.preventDefault();
             var contactId = $(this).data("contact-id");
             if (confirm("Are you sure you want to delete this contact?")) {
-                // Prepare the data for the AJAX request
                 var data = new URLSearchParams();
                 data.append('action', 'delete_contact');
                 data.append('security', ajax_object.delete_contact_nonce);
                 data.append('id', contactId);
-    
-                // Perform the AJAX request using fetch API
                 fetch(ajax_object.ajax_url, {
                     method: "POST",
                     body: data,
@@ -79,11 +75,9 @@ jQuery(document).ready(function ($) {
                     return response.json();
                 })
                 .then(data => {
-                    // Handle the response here (e.g., show a success message or update the contact list).
                     console.log(data);
                 })
                 .catch(error => {
-                    // Handle errors here.
                     console.error('Error:', error);
                 });
             }
