@@ -21,7 +21,7 @@ function contact_management_delete_contact()
 {
     if (class_exists('Contact_Management_Plugin')) {
         $contact_management_plugin = new Contact_Management_Plugin();
-        $contact_management_plugin->save_contact();
+        $contact_management_plugin->delete_contact();
     }
 
     wp_die();
