@@ -1,6 +1,9 @@
 <?php
+// Get the path to the plugin directory
+
 class Contact_Management_Plugin
 {
+    
     //Private Property
     private $table_name;
 
@@ -12,10 +15,13 @@ class Contact_Management_Plugin
 
         add_action('admin_menu', array($this, 'register_admin_menu'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_shortcode('contact_form', array($this, 'contact_form_shortcode'));
+        add_action('admin_notices', array($this, 'display_shortcode_notice'));
         add_action('wp_ajax_save_contact', array($this, 'save_contact'));
         add_action('wp_ajax_nopriv_save_contact', array($this, 'save_contact'));
-        add_shortcode('contact_form', array($this, 'contact_form_shortcode'));
-       
+        add_action('wp_ajax_delete_contact', array($this, 'delete_contact'));
+        add_action('wp_ajax_nopriv_delete_contact', array($this, 'delete_contact'));
+
         
     }
     //For activating plugin and creating table in database
@@ -68,58 +74,98 @@ class Contact_Management_Plugin
 {
     wp_enqueue_script('jquery');
     wp_enqueue_script(
+        'jquery-validate',
+        'https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js',
+        array('jquery'),
+        '1.19.3',
+        true
+    );
+
+    wp_enqueue_script(
         'contact-management-scripts',
         plugin_dir_url(__FILE__) . 'js/contact-management.js',
-        array('jquery'),
+        array('jquery', 'jquery-validate'), 
         '1.0',
         true
     );
+    
     wp_localize_script('contact-management-scripts', 'ajax_object', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'security' => wp_create_nonce('save_contact_nonce')
     ));
+    wp_enqueue_script('custom-ajax-script', plugin_dir_url(__FILE__) . 'js/custom-ajax-script.js', array('jquery'), '1.0', true);
+    wp_localize_script('custom-ajax-script', 'ajax_object', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'delete_contact_nonce' => wp_create_nonce('delete_contact_nonce'),
+    ));
+
+
+    wp_enqueue_style(
+        'contact-form-style',
+        plugin_dir_url(__FILE__) . 'css/contact-management.css',
+        array(),
+        '1.0'
+    );
 }
 
-      //admin page data list
-    public function admin_page()
+    public function display_shortcode_notice()
     {
-        global $wpdb;
-        $contacts = $wpdb->get_results("SELECT * FROM $this->table_name");
-        ?>
-        <div class="wrap">
-            <h1>Contact List</h1>
-            <table class="wp-list-table widefat fixed striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Phone Number</th>
-                        <th>Address</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($contacts as $contact) : ?>
-                        <tr>
-                            <td><?php echo $contact->id; ?></td>
-                            <td><?php echo $contact->email; ?></td>
-                            <td><?php echo $contact->first_name; ?></td>
-                            <td><?php echo $contact->last_name; ?></td>
-                            <td><?php echo $contact->phone_number; ?></td>
-                            <td><?php echo $contact->address; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <?php
+        global $hook_suffix;
+        if ('toplevel_page_contact-management' === $hook_suffix) {
+            ?>
+            <div class="notice notice-info is-dismissible">
+                <p><strong>Shortcode:</strong> [contact_form] for implementation in frontend</p>
+            </div>
+            <?php
+        }
     }
+        
+
+      //admin page data list
+      public function admin_page()
+      {
+          global $wpdb;
+          $contacts = $wpdb->get_results("SELECT * FROM $this->table_name");
+          ?>
+          <div class="wrap">
+              <h1>Contact List</h1>
+              <table class="wp-list-table widefat fixed striped">
+                  <thead>
+                      <tr>
+                          <th>ID</th>
+                          <th>Email</th>
+                          <th>First Name</th>
+                          <th>Last Name</th>
+                          <th>Phone Number</th>
+                          <th>Address</th>
+                          <th>Action</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+    <?php foreach ($contacts as $contact) : ?>
+        <tr id="contact-<?php echo $contact->id; ?>">
+            <td><?php echo $contact->id; ?></td>
+            <td><?php echo $contact->email; ?></td>
+            <td><?php echo $contact->first_name; ?></td>
+            <td><?php echo $contact->last_name; ?></td>
+            <td><?php echo $contact->phone_number; ?></td>
+            <td><?php echo $contact->address; ?></td>
+            <td>
+                <a href="#" class="delete-contact" data-contact-id="<?php echo $contact->id; ?>">Delete</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</tbody>
+              </table>
+          </div>
+          <?php
+      }
+
 
     //data insert 
     public function save_contact()
-{
-    global $wpdb;
+       {
+           global $wpdb;
 
     if (check_ajax_referer('save_contact_nonce', 'security', false)) {
         $email = sanitize_email($_POST['email']);
@@ -150,6 +196,39 @@ class Contact_Management_Plugin
     }
 }
 
+
+// Assuming this function is within a class or a proper context.
+            public function delete_contact()
+            {
+                if (!wp_doing_ajax()) {
+                    wp_send_json_error(array('message' => 'Invalid request.'), 400);
+                    return;
+                }
+
+                $nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : '';
+                if (!wp_verify_nonce($nonce, 'delete_contact_nonce')) {
+                    wp_send_json_error(array('message' => 'Invalid security nonce.'), 403);
+                    return;
+                }
+
+                $contact_id = isset($_POST['id']) ? absint($_POST['id']) : 0;
+                if ($contact_id === 0) {
+                    wp_send_json_error(array('message' => 'Invalid contact ID.'), 400);
+                    return;
+                }
+
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'contacts';
+                $deleted = $wpdb->delete($table_name, array('id' => $contact_id), array('%d'));
+
+                if ($deleted !== false) {
+                    wp_send_json_success(array('message' => 'Contact deleted successfully.'), 200);
+                } else {
+                    wp_send_json_error(array('message' => 'Failed to delete the contact.'), 500);
+                }
+            }
+
+
  //shortcode for frontend form
     public function contact_form_shortcode()
     {
@@ -157,6 +236,8 @@ class Contact_Management_Plugin
         include plugin_dir_path(__FILE__) . 'templates/contact_form.php';
         return ob_get_clean();
     }
+    
 }
+
 
 add_shortcode('contact_form', 'contact_form_shortcode');
