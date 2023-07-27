@@ -21,8 +21,9 @@
             <input type="text" name="address" id="address">
         </div>
         <div>
-            <input type="hidden" name="id" id="contact-id" value="">
+            <!-- Nonce field should be inside the form -->
             <?php wp_nonce_field('save_contact_nonce', 'security'); ?>
+            <input type="hidden" name="id" id="contact-id" value="">
             <input type="submit" class="submit-contact" value="Submit">
         </div>
     </form>
