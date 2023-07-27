@@ -21,9 +21,10 @@
             <input type="text" name="address" id="address">
         </div>
         <div>
-            <input type="submit" value="Submit">
+            <input type="hidden" name="id" id="contact-id" value="">
+            <?php wp_nonce_field('save_contact_nonce', 'security'); ?>
+            <input type="submit" class="submit-contact" value="Submit">
         </div>
-        <?php wp_nonce_field('save_contact_nonce', 'save_contact_nonce'); ?>
     </form>
     <div id="contact-form-message"></div>
 </div>
