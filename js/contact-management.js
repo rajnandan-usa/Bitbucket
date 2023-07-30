@@ -51,37 +51,44 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    // Handle contact delete via AJAX.
-    jQuery(document).ready(function($) {
-        $(".delete-contact").on("click", function(e) {
-            e.preventDefault();
-            var contactId = $(this).data("contact-id");
-            if (confirm("Are you sure you want to delete this contact?")) {
-                var data = new URLSearchParams();
-                data.append('action', 'delete_contact');
-                data.append('security', ajax_object.delete_contact_nonce);
-                data.append('id', contactId);
-                fetch(ajax_object.ajax_url, {
-                    method: "POST",
-                    body: data,
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
-        });
-    });
+    // // Handle contact delete via AJAX.
+    // jQuery(document).ready(function($) {
+    //     $(".delete-contact").on("click", function(e) {
+    //         e.preventDefault();
+    //         console.log('JavaScript file is loaded and working.');
+    //         if (confirm("Are you sure you want to delete this contact?")) {
+    //             var data = new URLSearchParams();
+    //             data.append('action', 'delete_contact');
+    //             data.append('security', ajax_object.delete_contact_nonce);
+    //             data.append('id', contactId);
+    //             fetch(ajax_object.ajax_url, {
+    //                 method: "POST",
+    //                 body: data,
+    //                 headers: {
+    //                     'Content-Type': 'application/x-www-form-urlencoded',
+    //                 },
+    //             })
+    //             .then(response => {
+    //                 if (!response.ok) {
+    //                     throw new Error('Network response was not ok');
+    //                 }
+    //                 return response.json();
+    //             })
+    //             .then(data => {
+    //                 console.log(data);
+    //                 if (data.success) {
+    //                     // Reload the page to update the contact list
+    //                     location.reload();
+    //                 } else {
+    //                     alert('Failed to delete the contact: ' + data.message);
+    //                 }
+    //             })
+    //             .catch(error => {
+    //                 console.error('Error:', error);
+    //             });
+    //         }
+    //     });
+    // });
+    
     
 });
