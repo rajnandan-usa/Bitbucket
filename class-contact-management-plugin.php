@@ -1,5 +1,5 @@
 <?php
-// Get the path to the plugin directory
+
 
 class Contact_Management_Plugin
 {
