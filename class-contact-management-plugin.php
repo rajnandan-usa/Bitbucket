@@ -179,7 +179,7 @@ class Contact_Management_Plugin
                 .then(data => {
                     console.log(data);
                     if (data.success) {
-                        // Reload the page to update the contact list
+                       
                         location.reload();
                     } else {
                         alert('Failed to delete the contact: ' + data.message);
@@ -232,7 +232,7 @@ class Contact_Management_Plugin
         }
     }
 
-    // Assuming this function is within a class or a proper context.
+    
     public function delete_contact()
     {
         error_log('Function delete_contact called.');
@@ -275,5 +275,4 @@ class Contact_Management_Plugin
 
 }
 
-// Assuming this function is not part of any class, it can be added outside the class.
 add_shortcode('contact_form', 'contact_form_shortcode');
