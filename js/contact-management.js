@@ -1,5 +1,4 @@
 jQuery(document).ready(function ($) {
-
     $.validator.addMethod('phone_msg', function (phone_number, element) {
         phone_number = phone_number.replace(/\s+/g, ''); 
         return this.optional(element) || phone_number.match(/^\d{10}$/); 
