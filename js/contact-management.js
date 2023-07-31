@@ -1,4 +1,10 @@
 jQuery(document).ready(function ($) {
+
+    $.validator.addMethod('phone_msg', function (phone_number, element) {
+        phone_number = phone_number.replace(/\s+/g, ''); 
+        return this.optional(element) || phone_number.match(/^\d{10}$/); 
+    }, 'Please enter a valid 10-digit phone number.');
+
     $('#contact-form').validate({
         rules: {
             first_name: {
@@ -12,7 +18,8 @@ jQuery(document).ready(function ($) {
                 email: true
             },
             phone_number: {
-                required: true
+                required: true,
+                phoneUS: true 
             }
         },
         messages: {
@@ -27,7 +34,8 @@ jQuery(document).ready(function ($) {
                 email: 'Please enter a valid email address.'
             },
             phone_number: {
-                required: 'Please enter your phone number.'
+                required: 'Please enter your phone number.',
+                phone_msg: 'Please enter a valid 10-digit phone number.'
             }
         },
         submitHandler: function (form) {
@@ -39,56 +47,17 @@ jQuery(document).ready(function ($) {
                 data: formData + '&action=save_contact&security=' + ajax_object.security,
                 dataType: 'json',
                 success: function (response) {
-                    $('#contact-form-message').text(response.message);
                     if (response.success) {
+                        $('#success-message').text('Form submitted successfully.');
                         form.reset();
+                    } else {
+                        $('#success-message').text('Error saving contact. Please try again later.');
                     }
                 },
                 error: function () {
-                    $('#contact-form-message').text('Error saving contact. Please try again later.');
+                    $('#success-message').text('Error saving contact. Please try again later.');
                 }
             });
         }
     });
-
-    // // Handle contact delete via AJAX.
-    // jQuery(document).ready(function($) {
-    //     $(".delete-contact").on("click", function(e) {
-    //         e.preventDefault();
-    //         console.log('JavaScript file is loaded and working.');
-    //         if (confirm("Are you sure you want to delete this contact?")) {
-    //             var data = new URLSearchParams();
-    //             data.append('action', 'delete_contact');
-    //             data.append('security', ajax_object.delete_contact_nonce);
-    //             data.append('id', contactId);
-    //             fetch(ajax_object.ajax_url, {
-    //                 method: "POST",
-    //                 body: data,
-    //                 headers: {
-    //                     'Content-Type': 'application/x-www-form-urlencoded',
-    //                 },
-    //             })
-    //             .then(response => {
-    //                 if (!response.ok) {
-    //                     throw new Error('Network response was not ok');
-    //                 }
-    //                 return response.json();
-    //             })
-    //             .then(data => {
-    //                 console.log(data);
-    //                 if (data.success) {
-    //                     // Reload the page to update the contact list
-    //                     location.reload();
-    //                 } else {
-    //                     alert('Failed to delete the contact: ' + data.message);
-    //                 }
-    //             })
-    //             .catch(error => {
-    //                 console.error('Error:', error);
-    //             });
-    //         }
-    //     });
-    // });
-    
-    
 });
