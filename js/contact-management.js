@@ -18,7 +18,7 @@ jQuery(document).ready(function ($) {
             },
             phone_number: {
                 required: true,
-                phoneUS: true 
+                phone_msg: true 
             }
         },
         messages: {
