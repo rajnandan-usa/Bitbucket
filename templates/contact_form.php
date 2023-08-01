@@ -27,5 +27,6 @@
             <input type="submit" class="submit-contact" value="Submit">
         </div>
     </form>
-    <div id="contact-form-message"></div>
+    <div id="success-message"></div>
+
 </div>
